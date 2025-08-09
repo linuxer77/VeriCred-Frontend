@@ -2,14 +2,14 @@
 
 import { useMemo, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Wallet, Menu, X, BookOpen, Compass, LifeBuoy, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Wallet, Menu, X, BookOpen, Compass, LifeBuoy, ArrowRight, CheckCircle2 } from "lucide-react"
 import { ethers } from "ethers"
 import { motion } from "framer-motion"
 import DocsSection from "@/components/landing/docs-section"
 import ExploreSection from "@/components/landing/explore-section"
 import SupportSection from "@/components/landing/support-section"
 import { useRouter } from "next/navigation"
-import { getStoredToken, isJwtValid } from "@/components/auth/jwt"
+import { getStoredToken, isJwtValid, saveWalletSession } from "@/components/auth/jwt"
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -31,14 +31,13 @@ export default function LandingPage() {
       { label: "Explore", href: "#explore" },
       { label: "Support", href: "#support" },
     ],
-    []
+    [],
   )
 
   async function handleMetaMaskConnect() {
     setIsConnecting(true)
-
     try {
-      if (!("ethereum" in window)) {
+      if (!(window as any).ethereum) {
         alert("MetaMask is not installed. Please install MetaMask to continue.")
         setIsConnecting(false)
         return
@@ -55,7 +54,6 @@ export default function LandingPage() {
         body: JSON.stringify({ metamask_address: address }),
         headers: { "Content-Type": "application/json" },
       })
-
       if (!nonceRes.ok) throw new Error("Failed to get nonce")
       const { nonce } = await nonceRes.json()
 
@@ -68,19 +66,17 @@ export default function LandingPage() {
         body: JSON.stringify({ metamask_address: address, signature }),
         headers: { "Content-Type": "application/json" },
       })
-
       if (!loginRes.ok) throw new Error("Login failed")
       const token = await loginRes.text()
 
       const network = await provider.getNetwork()
-      const walletData = {
+      saveWalletSession({
         address,
         chainId: `0x${network.chainId.toString(16)}`,
         isConnected: true,
         timestamp: Date.now(),
         token,
-      }
-      localStorage.setItem("vericred_wallet", JSON.stringify(walletData))
+      })
 
       alert("MetaMask connected and authenticated successfully!")
       router.replace("/home")
@@ -224,8 +220,8 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.18 }}
               >
-                A decentralized platform for verified academic and professional credentials on-chain.
-                Connect your wallet to start exploring.
+                A decentralized platform for verified academic and professional credentials on-chain. Connect your
+                wallet to start exploring.
               </motion.p>
 
               <motion.div
@@ -358,9 +354,15 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-sm text-gray-400 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>© {new Date().getFullYear()} VeriCred. All rights reserved.</div>
           <div className="flex items-center gap-4">
-            <a href="#docs" className="hover:text-white transition-colors">Docs</a>
-            <a href="#explore" className="hover:text-white transition-colors">Explore</a>
-            <a href="#support" className="hover:text-white transition-colors">Support</a>
+            <a href="#docs" className="hover:text-white transition-colors">
+              Docs
+            </a>
+            <a href="#explore" className="hover:text-white transition-colors">
+              Explore
+            </a>
+            <a href="#support" className="hover:text-white transition-colors">
+              Support
+            </a>
           </div>
         </div>
       </footer>

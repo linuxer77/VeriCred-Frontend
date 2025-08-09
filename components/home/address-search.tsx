@@ -1,103 +1,168 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Search, CircleHelp } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { Copy, Search, University, User, Waypoints } from "lucide-react"
 import { motion } from "framer-motion"
 
+type ResultType = "user" | "university"
+
 type Result = {
-  type: "user" | "university"
+  type: ResultType
   address: string
-  name?: string
+  name: string
+  verified: boolean
 }
 
 export default function AddressSearch() {
   const [query, setQuery] = useState("")
+  const [debounced, setDebounced] = useState("")
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<Result[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [results, setResults] = useState<Result[]>([])
 
-  async function onSearch(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setResults(null)
+  // debounce
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(query.trim()), 300)
+    return () => clearTimeout(t)
+  }, [query])
 
-    try {
-      // If you have a backend, you can wire it here:
-      // const res = await fetch(`http://localhost:8080/search?address=${encodeURIComponent(query)}`)
-      // const data = await res.json()
-
-      // Demo: if it looks like an address, show sample results
-      const looksLikeAddress = /^0x[a-fA-F0-9]{40}$/.test(query.trim())
-      await new Promise((r) => setTimeout(r, 600))
-      if (looksLikeAddress) {
-        setResults([
-          { type: "user", address: query.trim(), name: "Sample Student" },
-          { type: "university", address: "0x1234567890abcdef1234567890abcdef12345678", name: "Sample University" },
-        ])
-      } else {
-        setResults([])
-      }
-    } catch (err: any) {
-      setError(err?.message ?? "Search failed")
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (!debounced) {
+      setResults([])
+      return
     }
+    setLoading(true)
+    // Mock: classify address based on last hex nibble
+    setTimeout(() => {
+      const mock: Result[] = [
+        {
+          type: "user",
+          address: debounced,
+          name: "0x User",
+          verified: Math.random() > 0.4,
+        },
+        {
+          type: "university",
+          address: "0x1234567890abcdef1234567890abcdef12345678",
+          name: "Example University",
+          verified: true,
+        },
+      ]
+      setResults(mock)
+      setLoading(false)
+    }, 500)
+  }, [debounced])
+
+  const isLikelyAddress = useMemo(() => /^0x[a-fA-F0-9]{6,}$/.test(query.trim()), [query])
+
+  function copy(value: string) {
+    navigator.clipboard.writeText(value)
   }
 
   return (
-    <section className="space-y-4">
-      <form onSubmit={onSearch} className="flex flex-col sm:flex-row gap-3">
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by wallet address (0x...)"
-          className="bg-black border-gray-800 text-white placeholder:text-gray-600"
-          required
-        />
-        <Button type="submit" disabled={loading} className="bg-white text-black hover:bg-gray-100">
-          <Search className="h-4 w-4 mr-2" />
-          {loading ? "Searching..." : "Search"}
-        </Button>
-      </form>
+    <Card className="bg-gray-900 border-gray-800">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-white flex items-center gap-2">
+          <Search className="h-4 w-4" />
+          Search by Address
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="0x…"
+            className="bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+          />
+          <Button
+            disabled={!isLikelyAddress || loading}
+            className="bg-white text-black hover:bg-gray-100"
+            onClick={() => setDebounced(query.trim())}
+          >
+            {loading ? "Searching…" : "Search"}
+          </Button>
+        </div>
+        {!isLikelyAddress && query && <p className="text-xs text-gray-500">Enter a valid address starting with 0x</p>}
 
-      <Card className="border-gray-800 bg-gradient-to-b from-gray-950 to-gray-900">
-        <CardHeader>
-          <CardTitle>Results</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-gray-300">
-          {error && <div className="text-red-400">{error}</div>}
-          {!error && results === null && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <CircleHelp className="h-4 w-4" />
-              Enter a wallet address to look up a user or university.
-            </div>
-          )}
-          {!error && results && results.length === 0 && (
-            <div className="text-gray-400">No results found.</div>
-          )}
-          {!error && results && results.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {results.map((r, idx) => (
-                <motion.div
-                  key={`${r.address}-${idx}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.05 * idx }}
-                  className="rounded-md border border-gray-800 bg-gray-950 p-3"
-                >
-                  <div className="text-gray-400 uppercase text-xs tracking-wide">{r.type}</div>
-                  <div className="font-medium text-white">{r.name ?? "—"}</div>
-                  <div className="text-xs text-gray-500 break-all">{r.address}</div>
-                </motion.div>
+        {/* Results */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {loading && (
+            <>
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="h-24 rounded-md bg-gray-800 animate-pulse" />
               ))}
-            </div>
+            </>
           )}
-        </CardContent>
-      </Card>
-    </section>
+          {!loading &&
+            results.map((r, i) => (
+              <motion.div
+                key={r.type + i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+              >
+                <Card className="bg-gray-900/70 border-gray-800 hover:border-gray-700 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/40 to-purple-300/20 flex items-center justify-center">
+                          {r.type === "user" ? (
+                            <User className="h-5 w-5 text-purple-200" />
+                          ) : (
+                            <University className="h-5 w-5 text-purple-200" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium">
+                              {r.type === "user" ? "User" : "University"} • {r.name}
+                            </p>
+                            <Badge
+                              className={
+                                r.verified
+                                  ? "bg-green-900/30 text-green-300 border-green-800"
+                                  : "bg-gray-800 text-gray-400 border-gray-700"
+                              }
+                            >
+                              {r.verified ? "Verified" : "Unverified"}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-400 font-mono mt-1">{r.address}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+                          onClick={() => copy(r.address)}
+                          title="Copy address"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+                          onClick={() =>
+                            alert(`${r.type === "user" ? "User" : "University"} profile is not implemented yet.`)
+                          }
+                        >
+                          <Waypoints className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

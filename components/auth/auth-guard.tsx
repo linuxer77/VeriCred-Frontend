@@ -1,26 +1,49 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { getStoredToken, isJwtValid } from "./jwt"
+import type React from "react"
 
-type AuthGuardProps = {
-  children: React.ReactNode
-}
+import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { isJwtValid, getStoredToken } from "./jwt"
+import { motion } from "framer-motion"
 
-/**
- * Client-side guard that ensures a valid JWT is available, otherwise redirects to "/".
- * Use this to protect authenticated pages like "/home".
- */
-export default function AuthGuard({ children }: AuthGuardProps) {
+export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  const [checking, setChecking] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const token = getStoredToken()
-    if (!isJwtValid(token)) {
-      router.replace("/")
+    const valid = isJwtValid(token)
+    if (!valid) {
+      // If not on landing, go to landing
+      if (pathname !== "/") {
+        router.replace("/")
+      }
     }
-  }, [router])
+    // Done checking
+    setChecking(false)
+  }, [router, pathname])
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-12 h-12 border-2 border-white/70 border-t-transparent rounded-full mx-auto mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          />
+          <p className="text-gray-400">Checking authentication…</p>
+        </motion.div>
+      </div>
+    )
+  }
 
   return <>{children}</>
 }

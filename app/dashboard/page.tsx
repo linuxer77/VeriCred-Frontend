@@ -13,6 +13,7 @@ import MintedCredentialsSummary from "@/components/minted-credentials-summary"
 import QuickActions from "@/components/quick-actions"
 import WalletGuard from "@/components/wallet-guard"
 import ProfileVerification from "@/components/profile-verification"
+import AuthGuard from "@/components/auth/auth-guard"
 
 // Mock data types
 interface University {
@@ -202,178 +203,187 @@ export default function StudentDashboard() {
   // Show loading state while profile is being loaded
   if (profileLoading) {
     return (
-      <WalletGuard>
-        <div className="min-h-screen bg-black text-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading your profile...</p>
+      <AuthGuard>
+        <WalletGuard>
+          <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading your profile...</p>
+            </div>
           </div>
-        </div>
-      </WalletGuard>
+        </WalletGuard>
+      </AuthGuard>
     )
   }
 
   // Show error state if profile failed to load
   if (!userProfile) {
     return (
-      <WalletGuard>
-        <div className="min-h-screen bg-black text-white flex items-center justify-center">
-          <Card className="w-full max-w-md bg-gray-900 border-gray-800">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-white">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                Profile Load Error
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-center text-sm text-gray-400">
-                Unable to load your profile. Please try reconnecting your wallet.
-              </p>
-              <Button
-                onClick={() => (window.location.href = "/")}
-                className="w-full bg-white text-black hover:bg-gray-100"
-              >
-                Return to Home
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </WalletGuard>
+      <AuthGuard>
+        <WalletGuard>
+          <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <Card className="w-full max-w-md bg-gray-900 border-gray-800">
+              <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2 text-white">
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                  Profile Load Error
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-center text-sm text-gray-400">
+                  Unable to load your profile. Please try reconnecting your wallet.
+                </p>
+                <Button
+                  onClick={() => (window.location.href = "/")}
+                  className="w-full bg-white text-black hover:bg-gray-100"
+                >
+                  Return to Home
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </WalletGuard>
+      </AuthGuard>
     )
   }
 
   return (
-    <WalletGuard>
-      <div className="min-h-screen bg-black text-white">
-        {/* Header */}
-        <header className="bg-gray-900 shadow-sm border-b border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-white">
-                  Veri<span className="text-gray-400">Cred</span>
-                </h1>
-                <Badge variant="secondary" className="ml-3 bg-gray-800 text-gray-300 border-gray-700">
-                  Student Dashboard
-                </Badge>
+    <AuthGuard>
+      <WalletGuard>
+        <div className="min-h-screen bg-black text-white">
+          {/* Header */}
+          <header className="bg-gray-900 shadow-sm border-b border-gray-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center">
+                  <h1 className="text-2xl font-bold text-white">
+                    Veri<span className="text-gray-400">Cred</span>
+                  </h1>
+                  <Badge variant="secondary" className="ml-3 bg-gray-800 text-gray-300 border-gray-700">
+                    Student Dashboard
+                  </Badge>
+                </div>
+                <WalletStatus userProfile={userProfile} onDisconnect={handleDisconnectWallet} />
               </div>
-              <WalletStatus userProfile={userProfile} onDisconnect={handleDisconnectWallet} />
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Success Message */}
-          {successMessage && (
-            <div className="mb-6 p-4 bg-green-900/20 border border-green-800 rounded-lg flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-400" />
-              <p className="text-green-300">{successMessage}</p>
-            </div>
-          )}
+          {/* Main Content */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-6 p-4 bg-green-900/20 border border-green-800 rounded-lg flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <p className="text-green-300">{successMessage}</p>
+              </div>
+            )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-400" />
-              <p className="text-red-300">{error}</p>
-            </div>
-          )}
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                <p className="text-red-300">{error}</p>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - University Selection & Specific View */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* University Selector */}
-              <UniversitySelector onUniversitySelect={handleUniversitySelect} selectedUniversity={selectedUniversity} />
-
-              {/* University Specific View */}
-              {selectedUniversity && (
-                <UniversitySpecificView
-                  university={selectedUniversity}
-                  credentials={credentials}
-                  loading={loading}
-                  userProfile={userProfile}
-                  onMintRequest={handleMintRequest}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - University Selection & Specific View */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* University Selector */}
+                <UniversitySelector
+                  onUniversitySelect={handleUniversitySelect}
+                  selectedUniversity={selectedUniversity}
                 />
-              )}
 
-              {/* Empty State */}
-              {!selectedUniversity && (
+                {/* University Specific View */}
+                {selectedUniversity && (
+                  <UniversitySpecificView
+                    university={selectedUniversity}
+                    credentials={credentials}
+                    loading={loading}
+                    userProfile={userProfile}
+                    onMintRequest={handleMintRequest}
+                  />
+                )}
+
+                {/* Empty State */}
+                {!selectedUniversity && (
+                  <Card className="bg-gray-900 border-gray-800">
+                    <CardContent className="py-12 text-center">
+                      <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-white mb-2">Select a University</h3>
+                      <p className="text-gray-400">
+                        Choose a university above to view your available credentials and request NFT minting.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Right Column - Summary & Quick Actions */}
+              <div className="space-y-6">
+                {/* Minted Credentials Summary */}
+                <MintedCredentialsSummary credentials={mintedCredentials} />
+
+                {/* Profile Verification */}
+                <ProfileVerification userProfile={userProfile} onStartVerification={handleStartVerification} />
+
+                {/* Quick Actions */}
+                <QuickActions />
+
+                {/* Profile Summary */}
                 <Card className="bg-gray-900 border-gray-800">
-                  <CardContent className="py-12 text-center">
-                    <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">Select a University</h3>
-                    <p className="text-gray-400">
-                      Choose a university above to view your available credentials and request NFT minting.
-                    </p>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-white">
+                      <User className="h-5 w-5" />
+                      Profile Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-400">Name:</span>
+                      <span className="text-sm font-medium text-white">{userProfile?.name || "Not set"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-400">Role:</span>
+                      <Badge variant="outline" className="border-gray-700 text-gray-300">
+                        {userProfile?.role || "Unknown"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-400">Credentials:</span>
+                      <span className="text-sm font-medium text-white">{mintedCredentials.length} minted</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-400">Verification:</span>
+                      {userProfile?.isVerified ? (
+                        <Badge className="bg-green-900/30 text-green-300 border-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-800 text-gray-400 border-gray-700">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Unverified
+                        </Badge>
+                      )}
+                    </div>
+                    <Separator className="bg-gray-800" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
                   </CardContent>
                 </Card>
-              )}
+              </div>
             </div>
-
-            {/* Right Column - Summary & Quick Actions */}
-            <div className="space-y-6">
-              {/* Minted Credentials Summary */}
-              <MintedCredentialsSummary credentials={mintedCredentials} />
-
-              {/* Profile Verification */}
-              <ProfileVerification userProfile={userProfile} onStartVerification={handleStartVerification} />
-
-              {/* Quick Actions */}
-              <QuickActions />
-
-              {/* Profile Summary */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <User className="h-5 w-5" />
-                    Profile Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Name:</span>
-                    <span className="text-sm font-medium text-white">{userProfile?.name || "Not set"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Role:</span>
-                    <Badge variant="outline" className="border-gray-700 text-gray-300">
-                      {userProfile?.role || "Unknown"}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Credentials:</span>
-                    <span className="text-sm font-medium text-white">{mintedCredentials.length} minted</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Verification:</span>
-                    {userProfile?.isVerified ? (
-                      <Badge className="bg-green-900/30 text-green-300 border-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-gray-800 text-gray-400 border-gray-700">
-                        <Shield className="h-3 w-3 mr-1" />
-                        Unverified
-                      </Badge>
-                    )}
-                  </div>
-                  <Separator className="bg-gray-800" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
-      </div>
-    </WalletGuard>
+          </main>
+        </div>
+      </WalletGuard>
+    </AuthGuard>
   )
 }
