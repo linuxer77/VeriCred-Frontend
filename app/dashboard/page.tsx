@@ -5,23 +5,28 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { GraduationCap, CheckCircle, AlertCircle, User, Shield } from "lucide-react"
+import { GraduationCap, CheckCircle, AlertCircle, User } from "lucide-react"
 import WalletStatus from "@/components/wallet-status"
 import UniversitySelector from "@/components/university-selector"
 import UniversitySpecificView from "@/components/university-specific-view"
 import MintedCredentialsSummary from "@/components/minted-credentials-summary"
-import QuickActions from "@/components/quick-actions"
 import WalletGuard from "@/components/wallet-guard"
-import ProfileVerification from "@/components/profile-verification"
 import AuthGuard from "@/components/auth/auth-guard"
+import { motion } from "framer-motion"
+import { getStoredToken, isJwtValid } from "@/components/auth/jwt"
+import Logo from "@/components/ui/logo"
 
-// Mock data types
 interface University {
   id: string
   name: string
   logo: string
   walletAddress: string
   verified: boolean
+  description?: string
+  website?: string
+  adminName?: string
+  adminRole?: string
+  banner?: string
 }
 
 interface Credential {
@@ -35,16 +40,16 @@ interface Credential {
 }
 
 interface UserProfile {
-  walletAddress: string
   role: string
-  name?: string
+  first_name?: string
+  last_name?: string
   email?: string
-  isVerified: boolean
-  verificationStatus: "unverified" | "pending" | "verified" | "rejected"
+  student_id?: string
 }
 
 export default function StudentDashboard() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null)
   const [credentials, setCredentials] = useState<Credential[]>([])
   const [mintedCredentials, setMintedCredentials] = useState<Credential[]>([])
@@ -53,46 +58,65 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Load user profile from stored wallet data
   useEffect(() => {
-    const loadUserProfile = () => {
+    const init = async () => {
       try {
-        const storedWallet = localStorage.getItem("vericred_wallet")
-        if (!storedWallet) {
+        const storedWalletRaw = localStorage.getItem("vericred_wallet")
+        if (!storedWalletRaw) {
           setProfileLoading(false)
+          setLoading(false)
+          return
+        }
+        const walletData = JSON.parse(storedWalletRaw)
+        setWalletAddress(walletData?.address || null)
+
+        const localUserRaw = localStorage.getItem("vericred_user")
+        if (localUserRaw) {
+          const localUser = JSON.parse(localUserRaw)
+          setUserProfile({
+            role: localUser.role || "Individual",
+            first_name: localUser.first_name,
+            last_name: localUser.last_name,
+            email: localUser.email,
+            student_id: localUser.student_id,
+          })
+          setProfileLoading(false)
+          setLoading(false)
           return
         }
 
-        const walletData = JSON.parse(storedWallet)
-
-        const mockUserProfile: UserProfile = {
-          walletAddress: walletData.address,
-          role: "Individual",
-          name: "John Doe",
-          email: "john.doe@email.com",
-          isVerified: false,
-          verificationStatus: "unverified",
+        const token = getStoredToken()
+        if (isJwtValid(token)) {
+          const res = await fetch("http://localhost:8080/api/me", {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          })
+          if (res.ok) {
+            const me = await res.json()
+            setUserProfile({
+              role: me.role || "Individual",
+              first_name: me.first_name,
+              last_name: me.last_name,
+              email: me.email,
+              student_id: me.student_id,
+            })
+          }
         }
-
-        // Simulate API call delay
-        setTimeout(() => {
-          setUserProfile(mockUserProfile)
-          setProfileLoading(false)
-          setLoading(false)
-        }, 1000)
-      } catch (error) {
-        console.error("Error loading user profile:", error)
+      } catch (err) {
+        console.error("Error loading user profile:", err)
+        setError("Failed to load profile")
+      } finally {
         setProfileLoading(false)
         setLoading(false)
       }
     }
 
-    loadUserProfile()
+    init()
   }, [])
 
-  // Mock minted credentials
   useEffect(() => {
-    if (userProfile) {
+    if (!userProfile) return
       const mockMintedCredentials: Credential[] = [
         {
           id: "1",
@@ -111,9 +135,7 @@ export default function StudentDashboard() {
           status: "minted",
         },
       ]
-
       setMintedCredentials(mockMintedCredentials)
-    }
   }, [userProfile])
 
   const handleUniversitySelect = async (university: University) => {
@@ -122,7 +144,6 @@ export default function StudentDashboard() {
     setError(null)
 
     try {
-      // Mock API call to fetch eligible credentials
       const mockCredentials: Credential[] = [
         {
           id: "3",
@@ -147,60 +168,22 @@ export default function StudentDashboard() {
       setTimeout(() => {
         setCredentials(mockCredentials)
         setLoading(false)
-      }, 1500)
+      }, 900)
     } catch (err) {
       setError("Failed to fetch credentials from university")
       setLoading(false)
     }
   }
 
-  const handleMintRequest = async (credentialId: string) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Mock API call to request mint
-      setTimeout(() => {
-        setCredentials((prev) =>
-          prev.map((cred) => (cred.id === credentialId ? { ...cred, status: "pending" as const } : cred)),
-        )
-        setSuccessMessage("Mint request submitted successfully! The university will review your request.")
-        setLoading(false)
-
-        // Clear success message after 5 seconds
-        setTimeout(() => setSuccessMessage(null), 5000)
-      }, 1000)
-    } catch (err) {
-      setError("Failed to submit mint request")
-      setLoading(false)
-    }
-  }
-
   const handleDisconnectWallet = () => {
-    // Clear stored wallet data
     localStorage.removeItem("vericred_wallet")
-
-    // Reset state
     setUserProfile(null)
     setSelectedUniversity(null)
     setCredentials([])
     setMintedCredentials([])
-
-    // Redirect to home
     window.location.href = "/"
   }
 
-  const handleStartVerification = () => {
-    setUserProfile((prev) => (prev ? { ...prev, verificationStatus: "pending" } : null))
-    // Mock verification process
-    setTimeout(() => {
-      setUserProfile((prev) => (prev ? { ...prev, verificationStatus: "verified", isVerified: true } : null))
-      setSuccessMessage("Profile verification completed successfully!")
-      setTimeout(() => setSuccessMessage(null), 5000)
-    }, 3000)
-  }
-
-  // Show loading state while profile is being loaded
   if (profileLoading) {
     return (
       <AuthGuard>
@@ -216,7 +199,6 @@ export default function StudentDashboard() {
     )
   }
 
-  // Show error state if profile failed to load
   if (!userProfile) {
     return (
       <AuthGuard>
@@ -230,13 +212,8 @@ export default function StudentDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-center text-sm text-gray-400">
-                  Unable to load your profile. Please try reconnecting your wallet.
-                </p>
-                <Button
-                  onClick={() => (window.location.href = "/")}
-                  className="w-full bg-white text-black hover:bg-gray-100"
-                >
+                <p className="text-center text-sm text-gray-400">Unable to load your profile. Please try reconnecting your wallet.</p>
+                <Button onClick={() => (window.location.href = "/")} className="w-full bg-white text-black hover:bg-gray-100">
                   Return to Home
                 </Button>
               </CardContent>
@@ -250,135 +227,132 @@ export default function StudentDashboard() {
   return (
     <AuthGuard>
       <WalletGuard>
-        <div className="min-h-screen bg-black text-white">
+        <div className="relative min-h-screen bg-black text-white overflow-hidden">
+          <motion.div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-purple-600/20 blur-3xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, ease: "easeOut" }} />
+          <motion.div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-24 h-80 w-80 rounded-full bg-purple-800/20 blur-3xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.3, ease: "easeOut", delay: 0.1 }} />
+
           {/* Header */}
-          <header className="bg-gray-900 shadow-sm border-b border-gray-800">
+          <header className="bg-gray-900/90 shadow-sm border-b border-gray-800 backdrop-blur supports-[backdrop-filter]:bg-gray-900/70">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-16">
                 <div className="flex items-center">
-                  <h1 className="text-2xl font-bold text-white">
-                    Veri<span className="text-gray-400">Cred</span>
-                  </h1>
-                  <Badge variant="secondary" className="ml-3 bg-gray-800 text-gray-300 border-gray-700">
-                    Student Dashboard
+                  <Logo size="md" />
+                  <Badge variant="secondary" className="ml-3 bg-purple-900/30 text-purple-300 border-purple-700">
+                    Workspace
                   </Badge>
                 </div>
-                <WalletStatus userProfile={userProfile} onDisconnect={handleDisconnectWallet} />
+                <WalletStatus userProfile={{ walletAddress: walletAddress || "", role: userProfile.role }} onDisconnect={handleDisconnectWallet} />
               </div>
             </div>
           </header>
 
           {/* Main Content */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Success Message */}
-            {successMessage && (
-              <div className="mb-6 p-4 bg-green-900/20 border border-green-800 rounded-lg flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <p className="text-green-300">{successMessage}</p>
-              </div>
-            )}
-
-            {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2 backdrop-blur-sm"
+              >
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <p className="text-red-300">{error}</p>
-              </div>
+              </motion.div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - University Selection & Specific View */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              {/* Left Column - University Selection & View */}
               <div className="lg:col-span-2 space-y-6">
-                {/* University Selector */}
-                <UniversitySelector
-                  onUniversitySelect={handleUniversitySelect}
-                  selectedUniversity={selectedUniversity}
-                />
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+                  <UniversitySelector onUniversitySelect={handleUniversitySelect} selectedUniversity={selectedUniversity} />
+                </motion.div>
 
-                {/* University Specific View */}
-                {selectedUniversity && (
+                {selectedUniversity ? (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }}>
                   <UniversitySpecificView
                     university={selectedUniversity}
                     credentials={credentials}
                     loading={loading}
                     userProfile={userProfile}
-                    onMintRequest={handleMintRequest}
-                  />
-                )}
-
-                {/* Empty State */}
-                {!selectedUniversity && (
-                  <Card className="bg-gray-900 border-gray-800">
+                      onMintRequest={(_id) => {
+                        setSuccessMessage("Mint request submitted successfully! The university will review your request.")
+                        setTimeout(() => setSuccessMessage(null), 4000)
+                      }}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }}>
+                  <Card className="bg-gradient-to-br from-gray-900/90 via-black/80 to-purple-900/20 border border-gray-800/60 backdrop-blur-xl shadow-2xl">
                     <CardContent className="py-12 text-center">
-                      <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <GraduationCap className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                      </motion.div>
                       <h3 className="text-lg font-medium text-white mb-2">Select a University</h3>
-                      <p className="text-gray-400">
-                        Choose a university above to view your available credentials and request NFT minting.
-                      </p>
+                        <p className="text-gray-400">Choose a university above to view your available credentials and request NFT minting.</p>
                     </CardContent>
                   </Card>
+                  </motion.div>
                 )}
               </div>
 
-              {/* Right Column - Summary & Quick Actions */}
+              {/* Right Column - Summary */}
               <div className="space-y-6">
-                {/* Minted Credentials Summary */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }}>
                 <MintedCredentialsSummary credentials={mintedCredentials} />
+                </motion.div>
 
-                {/* Profile Verification */}
-                <ProfileVerification userProfile={userProfile} onStartVerification={handleStartVerification} />
-
-                {/* Quick Actions */}
-                <QuickActions />
-
-                {/* Profile Summary */}
-                <Card className="bg-gray-900 border-gray-800">
+                {/* Profile Summary with required fields */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}>
+                <Card className="bg-gradient-to-br from-gray-900/90 via-black/80 to-purple-900/20 border border-gray-800/60 backdrop-blur-xl shadow-2xl">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-white">
-                      <User className="h-5 w-5" />
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <User className="h-5 w-5 text-purple-400" />
+                      </motion.div>
                       Profile Summary
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Name:</span>
-                      <span className="text-sm font-medium text-white">{userProfile?.name || "Not set"}</span>
-                    </div>
-                    <div className="flex justify-between">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">First name:</span>
+                        <span className="text-sm font-medium text-white">{userProfile.first_name || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Last name:</span>
+                        <span className="text-sm font-medium text-white">{userProfile.last_name || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Email:</span>
+                        <span className="text-sm font-medium text-white">{userProfile.email || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Student email:</span>
+                        <span className="text-sm font-medium text-white">{userProfile.student_id || "—"}</span>
+                      </div>
+                      <Separator className="bg-gray-800" />
+                      <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-400">Role:</span>
-                      <Badge variant="outline" className="border-gray-700 text-gray-300">
-                        {userProfile?.role || "Unknown"}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Credentials:</span>
-                      <span className="text-sm font-medium text-white">{mintedCredentials.length} minted</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Verification:</span>
-                      {userProfile?.isVerified ? (
-                        <Badge className="bg-green-900/30 text-green-300 border-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Verified
+                      <Badge variant="outline" className="border-purple-700 text-purple-300">
+                          {userProfile.role}
                         </Badge>
-                      ) : (
-                        <Badge className="bg-gray-800 text-gray-400 border-gray-700">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Unverified
-                        </Badge>
-                      )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {successMessage && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                    <div className="p-4 bg-green-900/20 border border-green-800 rounded-lg flex items-center gap-2 backdrop-blur-sm">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                      <p className="text-green-300">{successMessage}</p>
                     </div>
-                    <Separator className="bg-gray-800" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </motion.div>
+                )}
               </div>
             </div>
           </main>

@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, LogOut } from "lucide-react"
+import { Wallet, LogOut, Copy, Check } from "lucide-react"
+import { useState } from "react"
 
 interface UserProfile {
   walletAddress: string
@@ -16,8 +17,21 @@ interface WalletStatusProps {
 }
 
 export default function WalletStatus({ userProfile, onDisconnect }: WalletStatusProps) {
+  const [copied, setCopied] = useState(false)
+
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  const copyAddress = async () => {
+    if (!userProfile?.walletAddress) return
+    try {
+      await navigator.clipboard.writeText(userProfile.walletAddress)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1200)
+    } catch (e) {
+      // ignore
+    }
   }
 
   // Show loading state if userProfile is null
@@ -41,6 +55,14 @@ export default function WalletStatus({ userProfile, onDisconnect }: WalletStatus
         <span className="text-sm text-gray-300">
           Connected: <span className="font-mono text-white">{formatAddress(userProfile.walletAddress)}</span>
         </span>
+        <button
+          onClick={copyAddress}
+          className="inline-flex items-center gap-1 rounded-md border border-gray-700 px-2 py-1 text-xs text-gray-300 hover:bg-gray-800 hover:text-white transition"
+          title="Copy address"
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+          <span className="hidden md:inline">{copied ? "Copied" : "Copy"}</span>
+        </button>
         <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300 border-gray-700">
           {userProfile.role}
         </Badge>

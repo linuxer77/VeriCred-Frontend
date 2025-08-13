@@ -33,12 +33,11 @@ interface UniversitySpecificViewProps {
 }
 
 interface UserProfile {
-  walletAddress: string
   role: string
-  name?: string
+  first_name?: string
+  last_name?: string
   email?: string
-  isVerified: boolean
-  verificationStatus: "unverified" | "pending" | "verified" | "rejected"
+  student_id?: string
 }
 
 export default function UniversitySpecificView({
@@ -179,27 +178,13 @@ export default function UniversitySpecificView({
                     </div>
                     <div className="flex items-center gap-2">
                       {credential.status === "eligible" && (
-                        <>
-                          {userProfile?.isVerified ? (
-                            <Button
-                              onClick={() => onMintRequest(credential.id)}
-                              disabled={loading}
-                              className="ml-4 bg-white text-black hover:bg-gray-100"
-                            >
-                              Request NFT Mint
-                            </Button>
-                          ) : (
-                            <div className="ml-4 flex flex-col gap-2">
-                              <Button disabled className="bg-gray-700 text-gray-400 cursor-not-allowed">
-                                Request NFT Mint
-                              </Button>
-                              <p className="text-xs text-yellow-400 flex items-center gap-1">
-                                <Shield className="h-3 w-3" />
-                                Profile verification required
-                              </p>
-                            </div>
-                          )}
-                        </>
+                        <Button
+                          onClick={() => onMintRequest(credential.id)}
+                          disabled={loading}
+                          className="ml-4 bg-white text-black hover:bg-gray-100"
+                        >
+                          Request NFT Mint
+                        </Button>
                       )}
                       <Button
                         variant="outline"

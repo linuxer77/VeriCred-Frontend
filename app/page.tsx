@@ -10,6 +10,7 @@ import ExploreSection from "@/components/landing/explore-section"
 import SupportSection from "@/components/landing/support-section"
 import { useRouter } from "next/navigation"
 import { getStoredToken, isJwtValid, saveWalletSession } from "@/components/auth/jwt"
+import Logo from "@/components/ui/logo"
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -101,10 +102,8 @@ export default function LandingPage() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
           <div className="flex justify-between items-center h-full">
             {/* Logo */}
-            <a href="#home" className="flex items-center gap-2 group">
-              <div className="text-2xl font-bold tracking-tight">
-                Veri<span className="text-gray-400 group-hover:text-white transition-colors">Cred</span>
-              </div>
+            <a href="#home" className="group">
+              <Logo size="md" className="group-hover:scale-105 transition-transform duration-200" />
             </a>
 
             {/* Desktop Navigation */}

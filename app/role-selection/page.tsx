@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { User, Building2, ArrowRight, Wallet, Shield, Award, Users } from "lucide-react"
+import Logo from "@/components/ui/logo"
 
 export default function RoleSelection() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
@@ -196,9 +197,7 @@ export default function RoleSelection() {
           transition={{ duration: 0.8 }}
         >
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold tracking-tight">
-              Veri<span className="text-gray-400">Cred</span>
-            </div>
+            <Logo size="md" />
             <motion.div
               className="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-full border border-gray-800"
               initial={{ opacity: 0, scale: 0.8 }}

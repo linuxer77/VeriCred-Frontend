@@ -3,13 +3,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Shield, Globe, Wallet, Edit } from "lucide-react"
+import { Shield, Globe, Wallet, Edit, Building2, Users, Award } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface University {
   id: string
   name: string
-  logo: string
-  banner: string
   description: string
   website: string
   walletAddress: string
@@ -27,71 +26,221 @@ export default function UniversityProfile({ university }: UniversityProfileProps
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5, ease: "easeOut" as const }
+    }
+  }
+
+  const cardHoverVariants = {
+    hover: {
+      y: -4,
+      scale: 1.02,
+      transition: { duration: 0.2, ease: "easeOut" as const }
+    }
+  }
+
   return (
-    <Card className="bg-gray-900 border-gray-800 overflow-hidden">
-      {/* Banner */}
-      <div className="relative h-48 bg-gradient-to-r from-gray-800 to-gray-700">
-        <img
-          src={university.banner || "/placeholder.svg"}
-          alt="University banner"
-          className="w-full h-full object-cover opacity-50"
-        />
-        <div className="absolute top-4 right-4">
-          <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-black/50">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
-        </div>
-      </div>
-
-      {/* Profile Content */}
-      <CardContent className="relative -mt-16 pb-6">
-        <div className="flex flex-col sm:flex-row gap-6">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <img
-              src={university.logo || "/placeholder.svg"}
-              alt={`${university.name} logo`}
-              className="w-32 h-32 rounded-lg border-4 border-gray-900 bg-gray-800 object-cover"
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <Card className="bg-gradient-to-br from-gray-900/90 via-black/80 to-purple-900/20 border border-gray-800/60 backdrop-blur-xl overflow-hidden shadow-2xl">
+        {/* Simplified header without banner image */}
+        <div className="relative h-24 bg-gradient-to-r from-purple-900/40 via-gray-800/60 to-purple-800/40 overflow-hidden">
+          {/* Animated background elements */}
+          <motion.div
+            className="absolute inset-0 opacity-30"
+            animate={{
+              backgroundPosition: ["0% 0%", "100% 100%"],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "linear"
+            }}
+            style={{
+              background: "radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%)"
+            }}
+          />
+          
+          {/* Floating orbs */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-purple-500/20 blur-xl"
+              style={{
+                width: 120 + i * 40,
+                height: 120 + i * 40,
+                top: `${20 + i * 15}%`,
+                left: `${(i * 137) % 80}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                x: [0, 10, 0],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 8 + i * 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
-          </div>
+          ))}
 
-          {/* University Info */}
-          <div className="flex-1 space-y-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-white">{university.name}</h1>
-                {university.verified && (
-                  <Badge className="bg-green-900/30 text-green-300 border-green-800">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                )}
-              </div>
-              <p className="text-gray-400 leading-relaxed">{university.description}</p>
-            </div>
-
-            {/* University Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-gray-500" />
-                <a
-                  href={university.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 text-sm"
-                >
-                  {university.website}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-300 text-sm font-mono">{formatAddress(university.walletAddress)}</span>
-              </div>
-            </div>
-          </div>
+          {/* Edit button */}
+          <motion.div 
+            className="absolute top-4 right-4"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-purple-600/60 text-purple-300 hover:bg-purple-900/30 bg-black/40 backdrop-blur-sm hover:border-purple-500 transition-all duration-200"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </motion.div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Profile Content */}
+        <CardContent className="relative pb-6 px-6">
+          <motion.div 
+            className="flex flex-col gap-6"
+            variants={itemVariants}
+          >
+            {/* University Header */}
+            <motion.div 
+              className="text-center sm:text-left"
+              variants={itemVariants}
+            >
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
+                {/* University Icon instead of logo */}
+                <motion.div
+                  className="flex-shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-lg"
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Building2 className="h-10 w-10 text-white" />
+                </motion.div>
+
+                <div className="flex-1 text-center sm:text-left">
+                  <motion.h1 
+                    className="text-3xl font-bold text-white mb-2"
+                    variants={itemVariants}
+                  >
+                    {university.name}
+                  </motion.h1>
+                  
+                  <motion.div 
+                    className="flex items-center justify-center sm:justify-start gap-3 mb-3"
+                    variants={itemVariants}
+                  >
+                    {university.verified && (
+                      <Badge className="bg-green-900/40 text-green-300 border-green-700/60 backdrop-blur-sm">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Verified Institution
+                      </Badge>
+                    )}
+                    <Badge className="bg-purple-900/40 text-purple-300 border-purple-700/60 backdrop-blur-sm">
+                      <Users className="h-3 w-3 mr-1" />
+                      Active Issuer
+                    </Badge>
+                  </motion.div>
+                </div>
+              </div>
+              
+              <motion.p 
+                className="text-gray-300 leading-relaxed text-center sm:text-left max-w-3xl"
+                variants={itemVariants}
+              >
+                {university.description}
+              </motion.p>
+            </motion.div>
+
+            {/* University Details Grid */}
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              variants={itemVariants}
+            >
+              <motion.div
+                variants={cardHoverVariants}
+                whileHover="hover"
+                className="p-4 bg-gray-800/40 rounded-xl border border-gray-700/60 hover:border-purple-600/60 transition-all duration-200 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                    <Globe className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Website</p>
+                    <a
+                      href={university.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-300 hover:text-purple-200 text-sm font-medium transition-colors duration-200"
+                    >
+                      {university.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                variants={cardHoverVariants}
+                whileHover="hover"
+                className="p-4 bg-gray-800/40 rounded-xl border border-gray-700/60 hover:border-purple-600/60 transition-all duration-200 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                    <Wallet className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Wallet Address</p>
+                    <p className="text-gray-300 text-sm font-mono font-medium">{formatAddress(university.walletAddress)}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                variants={cardHoverVariants}
+                whileHover="hover"
+                className="p-4 bg-gray-800/40 rounded-xl border border-gray-700/60 hover:border-purple-600/60 transition-all duration-200 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                    <Award className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Admin</p>
+                    <p className="text-gray-300 text-sm font-medium">{university.adminName}</p>
+                    <p className="text-gray-500 text-xs">{university.adminRole}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }

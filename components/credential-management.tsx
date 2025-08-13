@@ -66,12 +66,12 @@ export default function CredentialManagement({ credentials, setCredentials }: Cr
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-white text-black hover:bg-gray-100">
+            <Button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 transition-all duration-200 transform hover:scale-105 shadow-lg shadow-purple-500/25">
               <Plus className="h-4 w-4 mr-2" />
               New Credential Type
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogContent className="bg-gradient-to-br from-gray-900/90 via-black/80 to-purple-900/20 border border-gray-800/60 backdrop-blur-xl shadow-2xl text-white">
             <DialogHeader>
               <DialogTitle className="text-white">Create New Credential Type</DialogTitle>
             </DialogHeader>
@@ -82,7 +82,7 @@ export default function CredentialManagement({ credentials, setCredentials }: Cr
                   placeholder="e.g., Bachelor of Science in Computer Science"
                   value={newCredential.name}
                   onChange={(e) => setNewCredential({ ...newCredential, name: e.target.value })}
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className="bg-gray-800/60 border-gray-700/60 text-white placeholder-gray-400 focus:border-purple-600/60 focus:ring-purple-600/20 transition-all duration-200"
                 />
               </div>
               <div>
@@ -91,7 +91,7 @@ export default function CredentialManagement({ credentials, setCredentials }: Cr
                   placeholder="e.g., Undergraduate Degree, Certificate"
                   value={newCredential.type}
                   onChange={(e) => setNewCredential({ ...newCredential, type: e.target.value })}
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className="bg-gray-800/60 border-gray-700/60 text-white placeholder-gray-400 focus:border-purple-600/60 focus:ring-purple-600/20 transition-all duration-200"
                 />
               </div>
               <div>

@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, Eye, Award, Settings, CheckCircle, Clock, AlertCircle } from "lucide-react"
+import { Search, Filter, Eye, Award, Settings, CheckCircle, Clock, AlertCircle, Users, Sparkles } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface Student {
   id: string
@@ -69,13 +70,13 @@ export default function StudentManagement({ students, setStudents, onMintCredent
   const getEligibilityBadge = (status: Student["eligibilityStatus"]) => {
     switch (status) {
       case "graduated":
-        return <Badge className="bg-green-900/30 text-green-300 border-green-800">Graduated</Badge>
+        return <Badge className="bg-green-900/40 text-green-300 border-green-700/60 backdrop-blur-sm">Graduated</Badge>
       case "eligible":
-        return <Badge className="bg-blue-900/30 text-blue-300 border-blue-800">Eligible</Badge>
+        return <Badge className="bg-blue-900/40 text-blue-300 border-blue-700/60 backdrop-blur-sm">Eligible</Badge>
       case "pending_review":
-        return <Badge className="bg-yellow-900/30 text-yellow-300 border-yellow-800">Pending Review</Badge>
+        return <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-700/60 backdrop-blur-sm">Pending Review</Badge>
       case "not_eligible":
-        return <Badge className="bg-red-900/30 text-red-300 border-red-800">Not Eligible</Badge>
+        return <Badge className="bg-red-900/40 text-red-300 border-red-700/60 backdrop-blur-sm">Not Eligible</Badge>
     }
   }
 
@@ -97,128 +98,211 @@ export default function StudentManagement({ students, setStudents, onMintCredent
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5, ease: "easeOut" as const }
+    }
+  }
+
+  const tableRowVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3, ease: "easeOut" as const }
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <Card className="bg-gray-900 border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white">Students & Credential Issuance</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="Search by name, ID, or wallet address..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48 bg-gray-800 border-gray-700 text-white">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all" className="text-white">
-                  All Students
-                </SelectItem>
-                <SelectItem value="graduated" className="text-white">
-                  Graduated
-                </SelectItem>
-                <SelectItem value="eligible" className="text-white">
-                  Eligible
-                </SelectItem>
-                <SelectItem value="pending_review" className="text-white">
-                  Pending Review
-                </SelectItem>
-                <SelectItem value="not_eligible" className="text-white">
-                  Not Eligible
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <motion.div 
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
+        <Card className="bg-gradient-to-br from-gray-900/90 via-black/80 to-purple-900/20 border border-gray-800/60 backdrop-blur-xl shadow-2xl">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-3">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Users className="h-6 w-6 text-purple-400" />
+              </motion.div>
+              Students & Credential Issuance
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles className="h-5 w-5 text-purple-400" />
+              </motion.div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Search and Filter */}
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4"
+              variants={itemVariants}
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
+                <Input
+                  placeholder="Search by name, ID, or wallet address..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-gray-800/60 border-gray-700/60 text-white placeholder-gray-400 focus:border-purple-600/60 focus:ring-purple-600/20 transition-all duration-200"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-48 bg-gray-800/60 border-gray-700/60 text-white focus:border-purple-600/60 focus:ring-purple-600/20 transition-all duration-200">
+                  <Filter className="h-4 w-4 mr-2 text-purple-400" />
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800/90 border-gray-700/60 backdrop-blur-xl">
+                  <SelectItem value="all" className="text-white hover:bg-purple-900/30">
+                    All Students
+                  </SelectItem>
+                  <SelectItem value="graduated" className="text-white hover:bg-purple-900/30">
+                    Graduated
+                  </SelectItem>
+                  <SelectItem value="eligible" className="text-white hover:bg-purple-900/30">
+                    Eligible
+                  </SelectItem>
+                  <SelectItem value="pending_review" className="text-white hover:bg-purple-900/30">
+                    Pending Review
+                  </SelectItem>
+                  <SelectItem value="not_eligible" className="text-white hover:bg-purple-900/30">
+                    Not Eligible
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </motion.div>
 
-          {/* Students Table */}
-          <div className="border border-gray-700 rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-700 hover:bg-gray-800">
-                  <TableHead className="text-gray-300">Student</TableHead>
-                  <TableHead className="text-gray-300">University ID</TableHead>
-                  <TableHead className="text-gray-300">Wallet Address</TableHead>
-                  <TableHead className="text-gray-300">Eligibility</TableHead>
-                  <TableHead className="text-gray-300">Minting Status</TableHead>
-                  <TableHead className="text-gray-300">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.map((student) => (
-                  <TableRow key={student.id} className="border-gray-700 hover:bg-gray-800">
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-white">{student.name}</p>
-                        <p className="text-sm text-gray-400">
-                          Joined: {new Date(student.joinDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300 font-mono">{student.universityId}</TableCell>
-                    <TableCell className="text-gray-300 font-mono">{formatAddress(student.walletAddress)}</TableCell>
-                    <TableCell>{getEligibilityBadge(student.eligibilityStatus)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getMintingStatusIcon(student.mintingStatus)}
-                        <span className="text-gray-300 capitalize">
-                          {student.mintingStatus === "none" ? "No requests" : student.mintingStatus}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {student.eligibilityStatus === "graduated" && student.mintingStatus === "none" && (
-                          <Button
-                            size="sm"
-                            onClick={() => onMintCredential(student)}
-                            disabled={loading}
-                            className="bg-white text-black hover:bg-gray-100"
-                          >
-                            <Award className="h-4 w-4 mr-1" />
-                            Mint
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
-                        >
-                          <Settings className="h-4 w-4 mr-1" />
-                          Manage
-                        </Button>
-                      </div>
-                    </TableCell>
+            {/* Students Table */}
+            <motion.div 
+              className="border border-gray-700/60 rounded-lg overflow-hidden bg-gray-800/20 backdrop-blur-sm"
+              variants={itemVariants}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700/60 hover:bg-gray-800/40 transition-colors duration-200">
+                    <TableHead className="text-purple-300 font-semibold">Student</TableHead>
+                    <TableHead className="text-purple-300 font-semibold">University ID</TableHead>
+                    <TableHead className="text-purple-300 font-semibold">Wallet Address</TableHead>
+                    <TableHead className="text-purple-300 font-semibold">Eligibility</TableHead>
+                    <TableHead className="text-purple-300 font-semibold">Minting Status</TableHead>
+                    <TableHead className="text-purple-300 font-semibold">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredStudents.map((student, index) => (
+                    <motion.tr
+                      key={student.id}
+                      variants={tableRowVariants}
+                      initial="hidden"
+                      animate="visible"
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ 
+                        backgroundColor: "rgba(147, 51, 234, 0.1)",
+                        scale: 1.01
+                      }}
+                      className="border-gray-700/60 hover:bg-gray-800/40 transition-all duration-200"
+                    >
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-white">{student.name}</p>
+                          <p className="text-sm text-gray-400">
+                            Joined: {new Date(student.joinDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-300 font-mono">{student.universityId}</TableCell>
+                      <TableCell className="text-gray-300 font-mono">{formatAddress(student.walletAddress)}</TableCell>
+                      <TableCell>{getEligibilityBadge(student.eligibilityStatus)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getMintingStatusIcon(student.mintingStatus)}
+                          <span className="text-gray-300 capitalize">
+                            {student.mintingStatus === "none" ? "No requests" : student.mintingStatus}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {student.eligibilityStatus === "graduated" && student.mintingStatus === "none" && (
+                            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                              <Button
+                                size="sm"
+                                onClick={() => onMintCredential(student)}
+                                disabled={loading}
+                                className="bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 transition-all duration-200 transform hover:scale-105 shadow-lg shadow-purple-500/25"
+                              >
+                                <Award className="h-4 w-4 mr-1" />
+                                Mint
+                              </Button>
+                            </motion.div>
+                          )}
+                          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-purple-700/60 text-purple-300 hover:bg-purple-900/20 bg-transparent transition-all duration-200"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                          </motion.div>
+                          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-purple-700/60 text-purple-300 hover:bg-purple-900/20 bg-transparent transition-all duration-200"
+                            >
+                              <Settings className="h-4 w-4 mr-1" />
+                              Manage
+                            </Button>
+                          </motion.div>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </motion.div>
 
-          {filteredStudents.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-400">No students found matching your criteria.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            {filteredStudents.length === 0 && (
+              <motion.div 
+                className="text-center py-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800/60 flex items-center justify-center">
+                  <Users className="h-8 w-8 text-gray-500" />
+                </div>
+                <p className="text-gray-400 text-lg">No students found matching your criteria.</p>
+                <p className="text-gray-500 text-sm mt-2">Try adjusting your search or filter settings.</p>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   )
 }

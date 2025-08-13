@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import Logo from "@/components/ui/logo"
 
 type VerificationStatus = "unverified" | "pending" | "verified"
 interface UserProfile {
@@ -48,9 +49,11 @@ export default function HomePage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-black text-white">
+      <div className="relative min-h-screen bg-black text-white overflow-hidden">
+        <motion.div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-purple-600/20 blur-3xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, ease: "easeOut" }} />
+        <motion.div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-24 h-80 w-80 rounded-full bg-purple-800/20 blur-3xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.3, ease: "easeOut", delay: 0.1 }} />
         {/* Header */}
-        <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
+        <header className="bg-gray-900/90 border-b border-gray-800 sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-gray-900/70">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <motion.div
               className="flex items-center gap-2"
@@ -58,11 +61,9 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <h1 className="text-2xl font-bold">
-                Veri<span className="text-gray-400">Cred</span>
-              </h1>
-              <Badge variant="secondary" className="ml-1 bg-gray-800 text-gray-300 border-gray-700">
-                Home
+              <Logo size="md" />
+              <Badge variant="secondary" className="ml-1 bg-purple-900/30 text-purple-300 border-purple-700">
+                User Hub
               </Badge>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
@@ -83,22 +84,7 @@ export default function HomePage() {
               <h2 className="text-xl font-semibold">Welcome back</h2>
               <p className="text-gray-400 text-sm">Search users or universities by address and manage verification.</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
-                onClick={() => (window.location.href = "/dashboard")}
-              >
-                Student Dashboard
-              </Button>
-              <Button
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
-                onClick={() => (window.location.href = "/university")}
-              >
-                University Admin
-              </Button>
-            </div>
+            <div className="flex items-center gap-2" />
           </motion.section>
 
           <AddressSearch />
