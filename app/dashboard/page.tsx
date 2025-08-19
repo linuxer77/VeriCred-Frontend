@@ -17,16 +17,22 @@ import { getStoredToken, isJwtValid } from "@/components/auth/jwt"
 import Logo from "@/components/ui/logo"
 
 interface University {
-  id: string
-  name: string
-  logo: string
-  walletAddress: string
-  verified: boolean
-  description?: string
-  website?: string
-  adminName?: string
-  adminRole?: string
-  banner?: string
+  ID: number
+  MetamaskAddress: string
+  AcadEmail: string
+  OrgName: string
+  OrgType: string
+  OrgUrl: string
+  OrgDesc: string
+  Country: string
+  State: string
+  City: string
+  Address: string
+  PostalCode: string
+  IsVerified: boolean
+  TotalStudents: number
+  CreatedAt: string
+  UpdatedAt: string
 }
 
 interface Credential {
@@ -87,7 +93,7 @@ export default function StudentDashboard() {
 
         const token = getStoredToken()
         if (isJwtValid(token)) {
-          const res = await fetch("http://localhost:8080/api/me", {
+          const res = await fetch("http://localhost:8080/home", {
             headers: {
               ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
@@ -149,8 +155,8 @@ export default function StudentDashboard() {
           id: "3",
           name: "Bachelor of Science in Computer Science",
           issueDate: "2024-05-15",
-          universityId: university.id,
-          universityName: university.name,
+          universityId: university.ID.toString(),
+          universityName: university.OrgName,
           status: "eligible",
           description: "4-year undergraduate degree program",
         },
@@ -158,8 +164,8 @@ export default function StudentDashboard() {
           id: "4",
           name: "Dean's List Recognition - Fall 2023",
           issueDate: "2023-12-20",
-          universityId: university.id,
-          universityName: university.name,
+          universityId: university.ID.toString(),
+          universityName: university.OrgName,
           status: "pending",
           description: "Academic achievement recognition",
         },
@@ -177,6 +183,7 @@ export default function StudentDashboard() {
 
   const handleDisconnectWallet = () => {
     localStorage.removeItem("vericred_wallet")
+    localStorage.removeItem("verifiedUser")
     setUserProfile(null)
     setSelectedUniversity(null)
     setCredentials([])
@@ -333,7 +340,7 @@ export default function StudentDashboard() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-400">Student email:</span>
                         <span className="text-sm font-medium text-white">{userProfile.student_id || "—"}</span>
-                      </div>
+                    </div>
                       <Separator className="bg-gray-800" />
                       <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-400">Role:</span>

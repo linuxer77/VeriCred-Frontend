@@ -1,66 +1,82 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { X, Award, User, BookOpen, Hash, Shield, FileText, CheckCircle, Loader2, Sparkles, Zap } from "lucide-react"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  X,
+  Award,
+  User,
+  BookOpen,
+  Hash,
+  Shield,
+  FileText,
+  CheckCircle,
+  Loader2,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 
 interface Student {
-  id: string
-  name: string
-  universityId: string
-  walletAddress: string
-  eligibilityStatus: "graduated" | "eligible" | "pending_review" | "not_eligible"
-  mintingStatus: "none" | "pending" | "minting" | "minted" | "failed"
-  joinDate: string
-  lastActivity: string
+  id: string;
+  name: string;
+  universityId: string;
+  walletAddress: string;
+  eligibilityStatus:
+    | "graduated"
+    | "eligible"
+    | "pending_review"
+    | "not_eligible";
+  mintingStatus: "none" | "pending" | "minting" | "minted" | "failed";
+  joinDate: string;
+  lastActivity: string;
 }
 
 interface University {
-  id: string
-  name: string
-  logo: string
-  banner: string
-  description: string
-  website: string
-  walletAddress: string
-  verified: boolean
-  adminName: string
-  adminRole: string
+  id: string;
+  name: string;
+  logo: string;
+  banner: string;
+  description: string;
+  website: string;
+  walletAddress: string;
+  verified: boolean;
+  adminName: string;
+  adminRole: string;
 }
 
 interface MintCredentialModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (credentialData: any) => void
-  student: Student | null
-  university: University | null
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (credentialData: any) => void;
+  student: Student | null;
+  university: University | null;
 }
 
 interface CredentialFormData {
-  name: string
-  description: string
-  image: string
-  external_url: string
-  credentialType: string
-  major: string
-  gpa: string
-  issueDate: string
-  graduationDate: string
-  credentialId: string
-  verificationUrl: string
-  accreditationBody: string
-  programDetails: string
-  animation_url: string
-  youtube_url: string
-  background_color: string
+  name: string;
+  description: string;
+  image: string;
+  external_url: string;
+  credentialType: string;
+  major: string;
+  gpa: string;
+  issueDate: string;
+  graduationDate: string;
+  credentialId: string;
+  verificationUrl: string;
+  accreditationBody: string;
+  programDetails: string;
+  animation_url: string;
+  youtube_url: string;
+  background_color: string;
 }
 
 export default function MintCredentialModal({
@@ -70,8 +86,8 @@ export default function MintCredentialModal({
   student,
   university,
 }: MintCredentialModalProps) {
-  const [activeTab, setActiveTab] = useState("basic")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState("basic");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CredentialFormData>({
     name: "",
     description: "",
@@ -89,12 +105,14 @@ export default function MintCredentialModal({
     animation_url: "",
     youtube_url: "",
     background_color: "FFFFFF",
-  })
+  });
 
   // Initialize form with default values when modal opens
   useEffect(() => {
     if (isOpen && student && university) {
-      const credentialId = `${university.id.toUpperCase()}-${Date.now()}-${student.id}`
+      const credentialId = `${university.id.toUpperCase()}-${Date.now()}-${
+        student.id
+      }`;
       setFormData({
         name: "BTECH",
         description: `Official academic credential awarded by ${university.name} for the successful completion of the Bachelor of Science program.`,
@@ -112,18 +130,21 @@ export default function MintCredentialModal({
         animation_url: "",
         youtube_url: "",
         background_color: "FFFFFF",
-      })
+      });
     }
-  }, [isOpen, student, university])
+  }, [isOpen, student, university]);
 
-  const handleInputChange = (field: keyof CredentialFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+  const handleInputChange = (
+    field: keyof CredentialFormData,
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async () => {
-    if (!student || !university) return
+    if (!student || !university) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     // Build the credential data structure
     const credentialData = {
@@ -150,14 +171,53 @@ export default function MintCredentialModal({
       animation_url: formData.animation_url || null,
       youtube_url: formData.youtube_url || null,
       background_color: formData.background_color,
-    }
+    };
 
-    // Simulate API delay
-    setTimeout(() => {
-      onSubmit(credentialData)
-      setIsSubmitting(false)
-    }, 2000)
-  }
+    try {
+      // POST credential metadata to backend which will upload to IPFS
+      const resp = await fetch("/api/uploadtoipfs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metadata: credentialData,
+          recipientWallet: student.walletAddress,
+          recipientName: student.name,
+          issuerWallet: university.walletAddress,
+          issuerName: university.name,
+        }),
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        throw new Error(
+          `Upload failed: ${resp.status} ${resp.statusText} ${text}`
+        );
+      }
+
+      const data = await resp.json();
+
+      // tolerate multiple possible field names returned by backend
+      const ipfsUri = data.ipfsUri || data.uri || data.url || data.ipfs || null;
+
+      if (!ipfsUri) {
+        throw new Error("No IPFS URI returned from /api/uploadtoipfs");
+      }
+
+      // Pass the metadata and returned IPFS URI to parent handler
+      const result = {
+        ...credentialData,
+        metadata_uri: ipfsUri,
+      };
+
+      onSubmit(result);
+    } catch (err: any) {
+      console.error("Failed to upload metadata to IPFS", err);
+      // minimal user feedback
+      alert(`Failed to upload metadata to IPFS: ${err?.message ?? err}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 50 },
@@ -166,7 +226,7 @@ export default function MintCredentialModal({
       scale: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 25,
         stiffness: 300,
       },
@@ -179,13 +239,13 @@ export default function MintCredentialModal({
         duration: 0.2,
       },
     },
-  }
+  };
 
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
     exit: { opacity: 0 },
-  }
+  };
 
   const tabContentVariants = {
     hidden: { opacity: 0, x: 20 },
@@ -194,9 +254,9 @@ export default function MintCredentialModal({
       x: 0,
       transition: { duration: 0.3 },
     },
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -261,7 +321,11 @@ export default function MintCredentialModal({
                     Mint New Credential
                     <motion.div
                       animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "linear",
+                      }}
                     >
                       <Sparkles className="h-5 w-5 text-yellow-400" />
                     </motion.div>
@@ -300,7 +364,9 @@ export default function MintCredentialModal({
                   </div>
                   <div>
                     <p className="font-semibold text-white">{student.name}</p>
-                    <p className="text-sm text-gray-400">ID: {student.universityId}</p>
+                    <p className="text-sm text-gray-400">
+                      ID: {student.universityId}
+                    </p>
                   </div>
                   <div className="ml-auto">
                     <Badge className="bg-green-900/30 text-green-300 border-green-800">
@@ -315,7 +381,11 @@ export default function MintCredentialModal({
 
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-4 bg-gray-800 border border-gray-700">
                 <TabsTrigger
                   value="basic"
@@ -348,7 +418,12 @@ export default function MintCredentialModal({
               </TabsList>
 
               <TabsContent value="basic" className="mt-6">
-                <motion.div variants={tabContentVariants} initial="hidden" animate="visible" className="space-y-6">
+                <motion.div
+                  variants={tabContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
                   <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -365,19 +440,29 @@ export default function MintCredentialModal({
                           <Input
                             id="name"
                             value={formData.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("name", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="e.g., BTECH, MBA, PhD"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="credentialType" className="text-gray-300">
+                          <Label
+                            htmlFor="credentialType"
+                            className="text-gray-300"
+                          >
                             Credential Type *
                           </Label>
                           <Input
                             id="credentialType"
                             value={formData.credentialType}
-                            onChange={(e) => handleInputChange("credentialType", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "credentialType",
+                                e.target.value
+                              )
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="e.g., Bachelor's Degree"
                           />
@@ -390,7 +475,9 @@ export default function MintCredentialModal({
                         <Textarea
                           id="description"
                           value={formData.description}
-                          onChange={(e) => handleInputChange("description", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("description", e.target.value)
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           rows={3}
                           placeholder="Detailed description of the credential..."
@@ -404,19 +491,26 @@ export default function MintCredentialModal({
                           <Input
                             id="image"
                             value={formData.image}
-                            onChange={(e) => handleInputChange("image", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("image", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="ipfs://QmYourImageHash/image.png"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="external_url" className="text-gray-300">
+                          <Label
+                            htmlFor="external_url"
+                            className="text-gray-300"
+                          >
                             External URL (IPFS)
                           </Label>
                           <Input
                             id="external_url"
                             value={formData.external_url}
-                            onChange={(e) => handleInputChange("external_url", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("external_url", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="ipfs://QmYourDetailsHash/details.pdf"
                           />
@@ -428,7 +522,12 @@ export default function MintCredentialModal({
               </TabsContent>
 
               <TabsContent value="academic" className="mt-6">
-                <motion.div variants={tabContentVariants} initial="hidden" animate="visible" className="space-y-6">
+                <motion.div
+                  variants={tabContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
                   <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -445,7 +544,9 @@ export default function MintCredentialModal({
                           <Input
                             id="major"
                             value={formData.major}
-                            onChange={(e) => handleInputChange("major", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("major", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="e.g., Computer Science"
                           />
@@ -457,7 +558,9 @@ export default function MintCredentialModal({
                           <Input
                             id="gpa"
                             value={formData.gpa}
-                            onChange={(e) => handleInputChange("gpa", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("gpa", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="e.g., 3.85"
                           />
@@ -472,31 +575,49 @@ export default function MintCredentialModal({
                             id="issueDate"
                             type="date"
                             value={formData.issueDate}
-                            onChange={(e) => handleInputChange("issueDate", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("issueDate", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="graduationDate" className="text-gray-300">
+                          <Label
+                            htmlFor="graduationDate"
+                            className="text-gray-300"
+                          >
                             Graduation Date *
                           </Label>
                           <Input
                             id="graduationDate"
                             type="date"
                             value={formData.graduationDate}
-                            onChange={(e) => handleInputChange("graduationDate", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "graduationDate",
+                                e.target.value
+                              )
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           />
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="accreditationBody" className="text-gray-300">
+                        <Label
+                          htmlFor="accreditationBody"
+                          className="text-gray-300"
+                        >
                           Accreditation Body
                         </Label>
                         <Input
                           id="accreditationBody"
                           value={formData.accreditationBody}
-                          onChange={(e) => handleInputChange("accreditationBody", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "accreditationBody",
+                              e.target.value
+                            )
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           placeholder="e.g., Accreditation Council for Education (ACE)"
                         />
@@ -507,7 +628,12 @@ export default function MintCredentialModal({
               </TabsContent>
 
               <TabsContent value="metadata" className="mt-6">
-                <motion.div variants={tabContentVariants} initial="hidden" animate="visible" className="space-y-6">
+                <motion.div
+                  variants={tabContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
                   <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -523,31 +649,43 @@ export default function MintCredentialModal({
                         <Input
                           id="credentialId"
                           value={formData.credentialId}
-                          onChange={(e) => handleInputChange("credentialId", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("credentialId", e.target.value)
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500 font-mono"
                           placeholder="Auto-generated unique ID"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="verificationUrl" className="text-gray-300">
+                        <Label
+                          htmlFor="verificationUrl"
+                          className="text-gray-300"
+                        >
                           Verification URL
                         </Label>
                         <Input
                           id="verificationUrl"
                           value={formData.verificationUrl}
-                          onChange={(e) => handleInputChange("verificationUrl", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("verificationUrl", e.target.value)
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           placeholder="https://vericred.com/verify?credentialId=..."
                         />
                       </div>
                       <div>
-                        <Label htmlFor="programDetails" className="text-gray-300">
+                        <Label
+                          htmlFor="programDetails"
+                          className="text-gray-300"
+                        >
                           Program Details (IPFS)
                         </Label>
                         <Input
                           id="programDetails"
                           value={formData.programDetails}
-                          onChange={(e) => handleInputChange("programDetails", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("programDetails", e.target.value)
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                           placeholder="ipfs://QmProgramDetailsHash/curriculum.json"
                         />
@@ -555,38 +693,56 @@ export default function MintCredentialModal({
                       <Separator className="bg-gray-700" />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="animation_url" className="text-gray-300">
+                          <Label
+                            htmlFor="animation_url"
+                            className="text-gray-300"
+                          >
                             Animation URL (Optional)
                           </Label>
                           <Input
                             id="animation_url"
                             value={formData.animation_url}
-                            onChange={(e) => handleInputChange("animation_url", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("animation_url", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="ipfs://QmAnimationHash/animation.mp4"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="youtube_url" className="text-gray-300">
+                          <Label
+                            htmlFor="youtube_url"
+                            className="text-gray-300"
+                          >
                             YouTube URL (Optional)
                           </Label>
                           <Input
                             id="youtube_url"
                             value={formData.youtube_url}
-                            onChange={(e) => handleInputChange("youtube_url", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("youtube_url", e.target.value)
+                            }
                             className="bg-gray-900 border-gray-600 text-white focus:border-gray-500"
                             placeholder="https://youtube.com/watch?v=..."
                           />
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="background_color" className="text-gray-300">
+                        <Label
+                          htmlFor="background_color"
+                          className="text-gray-300"
+                        >
                           Background Color (Hex)
                         </Label>
                         <Input
                           id="background_color"
                           value={formData.background_color}
-                          onChange={(e) => handleInputChange("background_color", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "background_color",
+                              e.target.value
+                            )
+                          }
                           className="bg-gray-900 border-gray-600 text-white focus:border-gray-500 font-mono"
                           placeholder="FFFFFF"
                           maxLength={6}
@@ -598,7 +754,12 @@ export default function MintCredentialModal({
               </TabsContent>
 
               <TabsContent value="preview" className="mt-6">
-                <motion.div variants={tabContentVariants} initial="hidden" animate="visible" className="space-y-6">
+                <motion.div
+                  variants={tabContentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
                   <Card className="bg-gray-800 border-gray-700">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -616,37 +777,53 @@ export default function MintCredentialModal({
                           >
                             <Award className="h-10 w-10 text-black" />
                           </motion.div>
-                          <h3 className="text-2xl font-bold text-white mb-2">{formData.name || "Credential Name"}</h3>
-                          <p className="text-gray-400 text-sm">{formData.description || "Credential description"}</p>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            {formData.name || "Credential Name"}
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            {formData.description || "Credential description"}
+                          </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="space-y-2">
                             <div className="flex justify-between">
                               <span className="text-gray-400">Type:</span>
-                              <span className="text-white">{formData.credentialType || "N/A"}</span>
+                              <span className="text-white">
+                                {formData.credentialType || "N/A"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Major:</span>
-                              <span className="text-white">{formData.major || "N/A"}</span>
+                              <span className="text-white">
+                                {formData.major || "N/A"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">GPA:</span>
-                              <span className="text-white">{formData.gpa || "N/A"}</span>
+                              <span className="text-white">
+                                {formData.gpa || "N/A"}
+                              </span>
                             </div>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between">
                               <span className="text-gray-400">Issue Date:</span>
-                              <span className="text-white">{formData.issueDate || "N/A"}</span>
+                              <span className="text-white">
+                                {formData.issueDate || "N/A"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Graduation:</span>
-                              <span className="text-white">{formData.graduationDate || "N/A"}</span>
+                              <span className="text-white">
+                                {formData.graduationDate || "N/A"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Status:</span>
-                              <Badge className="bg-green-900/30 text-green-300 border-green-800 text-xs">Active</Badge>
+                              <Badge className="bg-green-900/30 text-green-300 border-green-800 text-xs">
+                                Active
+                              </Badge>
                             </div>
                           </div>
                         </div>
@@ -666,7 +843,10 @@ export default function MintCredentialModal({
                 <p>Gas fees will be covered by university wallet</p>
               </div>
               <div className="flex gap-3">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <Button
                     variant="outline"
                     onClick={onClose}
@@ -676,17 +856,26 @@ export default function MintCredentialModal({
                     Cancel
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <Button
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !formData.name || !formData.description}
+                    disabled={
+                      isSubmitting || !formData.name || !formData.description
+                    }
                     className="bg-white text-black hover:bg-gray-100 font-semibold min-w-[120px]"
                   >
                     {isSubmitting ? (
                       <motion.div className="flex items-center gap-2">
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "linear",
+                          }}
                         >
                           <Loader2 className="h-4 w-4" />
                         </motion.div>
@@ -706,5 +895,5 @@ export default function MintCredentialModal({
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

@@ -159,11 +159,18 @@ export function VerificationSignupModal({
         localStorage.setItem("vericred_user", JSON.stringify(createdUser))
       } catch {}
       
+      // Set verified user flag
+      const role = (createdUser?.role || mode)
+      const next = String(role).toLowerCase() === "university" ? "/university" : "/dashboard"
+      localStorage.setItem("verifiedUser", JSON.stringify({
+        verified: true,
+        route: next,
+        userType: role.toLowerCase()
+      }))
+
       setTimeout(() => {
         onSuccess?.()
         onClose()
-        const role = (createdUser?.role || mode)
-        const next = String(role).toLowerCase() === "university" ? "/university" : "/dashboard"
         router.push(next)
       }, 600)
     } catch (err: any) {

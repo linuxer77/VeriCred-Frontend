@@ -7,11 +7,22 @@ import { Separator } from "@/components/ui/separator"
 import { Award, Clock, CheckCircle, AlertCircle, Calendar, FileText, Shield, Eye, Settings } from "lucide-react"
 
 interface University {
-  id: string
-  name: string
-  logo: string
-  walletAddress: string
-  verified: boolean
+  id: number
+  metamask_address: string
+  acad_email: string
+  org_name: string
+  org_type: string
+  org_url: string
+  org_desc: string
+  country: string
+  state: string
+  city: string
+  address: string
+  postal_code: string
+  is_verified: boolean
+  total_students: number
+  created_at: string
+  updated_at: string
 }
 
 interface Credential {
@@ -131,18 +142,16 @@ export default function UniversitySpecificView({
     <Card className="bg-gray-900 border-gray-800">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <img
-            src={university.logo || "/placeholder.svg"}
-            alt={`${university.name} logo`}
-            className="w-12 h-12 rounded-full object-cover"
-          />
+          <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
+            <Shield className="h-6 w-6 text-white" />
+          </div>
           <div>
             <CardTitle className="flex items-center gap-2 text-white">
-              {university.name}
-              {university.verified && <Shield className="h-5 w-5 text-green-400" />}
+              {university.org_name}
+              {university.is_verified && <Shield className="h-5 w-5 text-green-400" />}
             </CardTitle>
             <CardDescription className="font-mono text-xs text-gray-500">
-              {university.walletAddress.slice(0, 10)}...{university.walletAddress.slice(-8)}
+              {university.metamask_address.slice(0, 10)}...{university.metamask_address.slice(-8)}
             </CardDescription>
           </div>
         </div>
@@ -153,7 +162,7 @@ export default function UniversitySpecificView({
           <div>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
               <Award className="h-5 w-5 text-green-400" />
-              {university.name} Credentials Available for You
+              {university.org_name} Credentials Available for You
             </h3>
             <div className="space-y-3">
               {eligibleCredentials.map((credential) => (
@@ -243,7 +252,7 @@ export default function UniversitySpecificView({
             <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">No Credentials Available</h3>
             <p className="text-gray-400">
-              You don't have any eligible credentials from {university.name} at this time.
+              You don't have any eligible credentials from {university.org_name} at this time.
             </p>
           </div>
         )}

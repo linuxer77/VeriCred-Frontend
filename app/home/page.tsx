@@ -37,6 +37,17 @@ export default function HomePage() {
         verificationStatus: "unverified",
       }
       setUserProfile(profile)
+
+      // Check if user is verified and redirect if necessary
+      const verifiedUserRaw = localStorage.getItem("verifiedUser")
+      if (verifiedUserRaw) {
+        const verifiedUser = JSON.parse(verifiedUserRaw)
+        if (verifiedUser.verified && verifiedUser.route) {
+          // Redirect to their correct route
+          window.location.href = verifiedUser.route
+          return
+        }
+      }
     } catch {
       // ignore
     }
@@ -44,6 +55,7 @@ export default function HomePage() {
 
   function disconnect() {
     localStorage.removeItem("vericred_wallet")
+    localStorage.removeItem("verifiedUser")
     window.location.href = "/"
   }
 
